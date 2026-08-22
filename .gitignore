@@ -2,15 +2,16 @@
 BUGS.md
 
 # CodeIgniter Files
-writable/
+# NOTE: app/Config/* and app/Views/errors/ are part of the application
+# skeleton and MUST be committed, otherwise spark cannot bootstrap on a
+# fresh clone. Only environment files and writable/ contents are ignored.
 .env
-app/Config/Boot/
-app/Config/Constants.php
-app/Config/Mimes.php
-app/Config/Paths.php
-app/Config/Publishers.php
-app/Config/UserAgents.php
-app/Views/errors/
+
+# writable/ contents are ignored, but the directory structure is kept
+# (directories must be re-included before .gitkeep inside them can be)
+writable/**
+!writable/**/
+!writable/**/.gitkeep
 
 # Composer
 vendor/
@@ -32,12 +33,6 @@ Thumbs.db
 
 # Cache
 app/Cache/
-
-# Sessions
-writable/session/
-writable/cache/
-writable/logs/
-writable/debugbar/
 
 # Environment Files
 .env.local
