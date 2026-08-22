@@ -12,8 +12,8 @@ class Dashboard extends BaseController
         $customerModel = new CustomerModel();
 
         $data = [
-            'total_customers' => 0,
-            'active_customers' => 0,
+            'total_customers' => $customerModel->countAllResults(),
+            'active_customers' => $customerModel->where('status', 'active')->countAllResults(),
             'recent_customers' => $customerModel->orderBy('created_at', 'DESC')->limit(5)->find()
         ];
 
