@@ -40,7 +40,7 @@ class Customers extends BaseController
 
         $data = [
             'customers' => $customers,
-            'pager' => null,
+            'pager' => $this->customerModel->pager,
             'search' => $search,
             'status' => $status,
             'city' => $city
