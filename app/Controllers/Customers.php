@@ -25,13 +25,15 @@ class Customers extends BaseController
 
         $customers = $this->customerModel;
 
-        // Search across name and email. Grouped so the OR cannot leak past
-        // the other filters once they are applied.
         if ($search !== null && $search !== '') {
             $customers = $customers->groupStart()
                 ->like('name', $search)
                 ->orLike('email', $search)
                 ->groupEnd();
+        }
+
+        if ($status !== null && $status !== '') {
+            $customers = $customers->where('status', $status);
         }
 
         $customers = $customers->orderBy('id', 'DESC')->paginate(20);
