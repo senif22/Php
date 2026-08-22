@@ -78,7 +78,9 @@ class Customers extends BaseController
             return redirect()->to('/customers')->with('success', 'Customer created successfully');
         }
 
-        return redirect()->back()->withInput()->with('error', 'Failed to create customer');
+        return redirect()->back()->withInput()
+            ->with('errors', $this->customerModel->errors())
+            ->with('error', 'Failed to create customer');
     }
 
     public function edit($id)
@@ -105,6 +107,7 @@ class Customers extends BaseController
         }
 
         $data = [
+            'id' => $id,
             'name' => $this->request->getPost('name'),
             'email' => $this->request->getPost('email'),
             'phone' => $this->request->getPost('phone'),
@@ -126,7 +129,9 @@ class Customers extends BaseController
             return redirect()->to('/customers')->with('success', 'Customer updated successfully');
         }
 
-        return redirect()->back()->withInput()->with('error', 'Failed to update customer');
+        return redirect()->back()->withInput()
+            ->with('errors', $this->customerModel->errors())
+            ->with('error', 'Failed to update customer');
     }
 
     public function delete($id)
