@@ -114,7 +114,7 @@ class Customers extends BaseController
             'notes' => $this->request->getPost('notes')
         ];
 
-        if ($this->customerModel->update($customer, $data)) {
+        if ($this->customerModel->update($id, $data)) {
             // Log activity
             $this->activityModel->insert([
                 'customer_id' => $id,
