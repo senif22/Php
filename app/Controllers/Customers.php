@@ -23,9 +23,18 @@ class Customers extends BaseController
         $status = $this->request->getGet('status');
         $city = $this->request->getGet('city');
 
-        $builder = $this->customerModel->builder();
+        $customers = $this->customerModel;
 
-        $customers = $builder->orderBy('id', 'DESC')->paginate(20);
+        // Search across name and email. Grouped so the OR cannot leak past
+        // the other filters once they are applied.
+        if ($search !== null && $search !== '') {
+            $customers = $customers->groupStart()
+                ->like('name', $search)
+                ->orLike('email', $search)
+                ->groupEnd();
+        }
+
+        $customers = $customers->orderBy('id', 'DESC')->paginate(20);
 
         $data = [
             'customers' => $customers,
