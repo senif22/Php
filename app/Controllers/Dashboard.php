@@ -3,32 +3,30 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\CustomerModel;
-use App\Libraries\Permission;
+use App\Services\DashboardService;
 
 class Dashboard extends BaseController
 {
     public function index()
     {
-        $visibleIds = Permission::visibleUserIds();
+        $service = new DashboardService();
+        $data = $service->data();
 
-        $data = [
-            'total_customers' => $this->scoped($visibleIds)->countAllResults(),
-            'active_customers' => $this->scoped($visibleIds)->where('status', 'active')->countAllResults(),
-            'recent_customers' => $this->scoped($visibleIds)->orderBy('created_at', 'DESC')->limit(5)->find()
-        ];
-
-        return view('dashboard/index', $data);
+        return view('dashboard/index', [
+            'summary' => $data['summary'],
+            'growth' => $data['growth'],
+            'statusDistribution' => $data['statusDistribution'],
+            'topCities' => $data['topCities'],
+            'recentActivities' => $data['recentActivities'],
+            'generatedAt' => $data['generated_at'],
+            'fromCache' => $data['from_cache'],
+        ]);
     }
 
-    protected function scoped(?array $visibleIds): CustomerModel
+    public function refresh()
     {
-        $model = new CustomerModel();
+        (new DashboardService())->clearCache();
 
-        if ($visibleIds !== null) {
-            $model->whereIn('assigned_to', $visibleIds);
-        }
-
-        return $model;
+        return redirect()->to('/dashboard')->with('success', 'Dashboard data refreshed');
     }
 }

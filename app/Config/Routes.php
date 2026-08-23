@@ -16,6 +16,7 @@ $routes->get('/logout', 'Auth::logout');
 $routes->group('', ['filter' => 'auth'], function($routes) {
     // Dashboard
     $routes->get('/dashboard', 'Dashboard::index');
+    $routes->get('/dashboard/refresh', 'Dashboard::refresh');
 
     // Customers
     $routes->get('/customers', 'Customers::index');
