@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if [ "$(apache2ctl -M 2>/dev/null | grep -c 'mpm_.*_module')" -gt 1 ]; then
+    echo "More than one MPM enabled, forcing mpm_prefork."
+    a2dismod -f mpm_event mpm_worker >/dev/null 2>&1 || true
+    a2enmod mpm_prefork >/dev/null 2>&1 || true
+fi
+
 : "${PORT:=80}"
 sed -ri "s/^Listen 80$/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -ri "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
@@ -59,9 +65,20 @@ done
 php spark migrate --all || echo "Migrations failed - check the logs."
 
 if [ "${RUN_SEED:-false}" = "true" ]; then
-    echo "Seeding..."
-    php spark db:seed DatabaseSeeder || true
-    php spark db:seed UserSeeder || true
+    EXISTING=$(php -r '
+        $c = @mysqli_connect(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASS"), getenv("DB_NAME"), (int) (getenv("DB_PORT") ?: 3306));
+        if (! $c) { echo "-1"; exit; }
+        $r = @mysqli_query($c, "SELECT COUNT(*) AS c FROM customers");
+        echo $r ? (int) mysqli_fetch_assoc($r)["c"] : -1;
+    ' 2>/dev/null)
+
+    if [ "${EXISTING:-0}" -gt 0 ]; then
+        echo "Customers already present (${EXISTING}), skipping seed."
+    else
+        echo "Seeding..."
+        php spark db:seed DatabaseSeeder || true
+        php spark db:seed UserSeeder || true
+    fi
 fi
 
 php spark cache:clear || true
