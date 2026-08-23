@@ -7,6 +7,7 @@ use App\Models\CustomerModel;
 use App\Models\ActivityModel;
 use App\Libraries\Permission;
 use App\Models\UserModel;
+use App\Services\EmailService;
 
 class Customers extends BaseController
 {
@@ -91,12 +92,16 @@ class Customers extends BaseController
 
         if ($this->customerModel->insert($data)) {
             // Log activity
+            $customerId = $this->customerModel->getInsertID();
+
             $this->activityModel->insert([
-                'customer_id' => $this->customerModel->getInsertID(),
+                'customer_id' => $customerId,
                 'action' => 'created',
                 'description' => 'Customer created',
                 'user_id' => session()->get('user_id')
             ]);
+
+            (new EmailService())->sendWelcome($this->customerModel->find($customerId));
 
             return redirect()->to('/customers')->with('success', 'Customer created successfully');
         }
@@ -149,6 +154,16 @@ class Customers extends BaseController
         ];
 
         if ($this->customerModel->update($id, $data)) {
+            $newStatus = (string) ($data['status'] ?? $customer['status']);
+
+            if ($newStatus !== $customer['status']) {
+                (new EmailService())->sendStatusChanged(
+                    $this->customerModel->find($id),
+                    (string) $customer['status'],
+                    $newStatus
+                );
+            }
+
             // Log activity
             $this->activityModel->insert([
                 'customer_id' => $id,

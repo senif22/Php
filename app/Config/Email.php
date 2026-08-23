@@ -6,8 +6,8 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = '';
-    public string $fromName   = '';
+    public string $fromEmail  = 'no-reply@legacy-crm.test';
+    public string $fromName   = 'Legacy CRM';
     public string $recipients = '';
 
     /**
@@ -18,7 +18,7 @@ class Email extends BaseConfig
     /**
      * The mail sending protocol: mail, sendmail, smtp
      */
-    public string $protocol = 'mail';
+    public string $protocol = 'smtp';
 
     /**
      * The server path to Sendmail.
@@ -48,7 +48,7 @@ class Email extends BaseConfig
     /**
      * SMTP Port
      */
-    public int $SMTPPort = 25;
+    public int $SMTPPort = 2525;
 
     /**
      * SMTP Timeout (in seconds)
@@ -82,7 +82,7 @@ class Email extends BaseConfig
     /**
      * Type of mail, either 'text' or 'html'
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
      * Character set (utf-8, iso-8859-1, etc.)
@@ -123,4 +123,18 @@ class Email extends BaseConfig
      * Enable notify message from server
      */
     public bool $DSN = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->fromEmail = (string) (env('email.fromEmail') ?: $this->fromEmail);
+        $this->fromName  = (string) (env('email.fromName') ?: $this->fromName);
+        $this->protocol  = (string) (env('email.protocol') ?: $this->protocol);
+        $this->SMTPHost  = (string) (env('email.SMTPHost') ?: $this->SMTPHost);
+        $this->SMTPUser  = (string) (env('email.SMTPUser') ?: $this->SMTPUser);
+        $this->SMTPPass  = (string) (env('email.SMTPPass') ?: $this->SMTPPass);
+        $this->SMTPPort  = (int) (env('email.SMTPPort') ?: $this->SMTPPort);
+        $this->SMTPCrypto = (string) (env('email.SMTPCrypto') ?: $this->SMTPCrypto);
+    }
 }

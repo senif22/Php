@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Libraries\Permission;
 use App\Models\ActivityModel;
 use App\Models\CustomerModel;
+use App\Services\EmailService;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -120,6 +121,8 @@ class CustomerController extends ResourceController
             'user_id' => Permission::userId(),
         ]);
 
+        (new EmailService())->sendWelcome($model->find($id));
+
         return $this->respond([
             'status' => 201,
             'message' => 'Customer created',
@@ -159,6 +162,16 @@ class CustomerController extends ResourceController
 
         if ($model->update($id, $data) === false) {
             return $this->validationFailed($model->errors());
+        }
+
+        $newStatus = (string) ($data['status'] ?? $customer['status']);
+
+        if ($newStatus !== $customer['status']) {
+            (new EmailService())->sendStatusChanged(
+                $model->find($id),
+                (string) $customer['status'],
+                $newStatus
+            );
         }
 
         (new ActivityModel())->insert([

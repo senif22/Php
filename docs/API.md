@@ -293,3 +293,35 @@ The token contains the following information:
 The user's role is taken from the signed JWT payload. Because the token is signed, changing the role manually on the client side will invalidate the signature.
 
 This prevents a user from simply modifying their token to gain additional permissions.
+
+## Email notifications
+
+A welcome email is sent whenever a customer is created — through the web form
+or `POST /api/customers`. A second email goes out when a customer's `status`
+changes.
+
+Sending never blocks the request: `EmailService` catches every failure, writes
+it to `writable/logs/`, and returns `false`. A customer is still created even
+when SMTP is unreachable.
+
+Configure SMTP in `.env`:
+
+```
+email.enabled   = true
+email.protocol  = 'smtp'
+email.SMTPHost  = 'sandbox.smtp.mailtrap.io'
+email.SMTPUser  = '<mailtrap username>'
+email.SMTPPass  = '<mailtrap password>'
+email.SMTPPort  = 2525
+email.SMTPCrypto = 'tls'
+```
+
+Set `email.enabled = false` to skip sending entirely (useful in CI).
+
+Two CLI helpers:
+
+```bash
+php spark email:preview 3 welcome   # renders to writable/, sends nothing
+php spark email:preview 3 status
+php spark email:test 3              # actually sends through SMTP
+```
