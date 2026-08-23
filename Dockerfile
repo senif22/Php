@@ -7,7 +7,8 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite headers
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite headers
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
