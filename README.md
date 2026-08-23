@@ -1,5 +1,42 @@
 # Legacy CRM System - Machine Round Test
 
+## Live Demo
+
+**https://php-production-933d.up.railway.app**
+
+Login is by email. All four accounts are listed on the login page:
+
+| Email | Password | Role | Sees |
+|---|---|---|---|
+| `admin@crm.test` | `admin123` | admin | everything, only role that can delete |
+| `manager@crm.test` | `manager123` | manager | views all, edits own + team |
+| `sales@crm.test` | `sales123` | sales | 40 customers, in the manager's team |
+| `solo@crm.test` | `solo1234` | sales | 30 customers, outside the team |
+
+Worth looking at while you're there:
+
+- Log in as **manager** and open the customer list — 20 rows are visible but
+  only the team's rows have an Edit button, and none have Delete.
+- Log in as **sales** and open `/customers/edit/50` directly. The button is
+  hidden *and* the URL returns 403.
+- The dashboard totals change per role (100 / 100 / 40 / 30), and so does the
+  CSV export.
+
+The API runs on the same host:
+
+```bash
+curl -X POST https://php-production-933d.up.railway.app/api/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@crm.test","password":"admin123"}'
+```
+
+Email sending is off on the demo (no SMTP credentials there). Creating a
+customer still works — the failure is caught and logged, which is the
+behaviour the spec asks for.
+
+What changed from the original repo is written up in
+[CHANGES.md](CHANGES.md).
+
 ## Setup Instructions
 
 ### 1. Prerequisites
