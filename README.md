@@ -35,16 +35,26 @@ database.default.password =
 database.default.DBDriver = MySQLi
 ```
 
-Run the database migration:
+Also set a JWT secret (any long random string) for the API:
+```
+jwt.secret = 'change-me-to-something-long-and-random'
+jwt.ttl = 3600
+```
+
+Run the migrations and seeders:
 ```bash
 php spark migrate
 php spark db:seed DatabaseSeeder
+php spark db:seed UserSeeder
 ```
 
 This will create:
 - `customers` table with 100 sample records
 - `customer_activities` table with activity logs
-- `users` table with admin user
+- `users` table with the four accounts listed below
+
+If you'd rather run plain SQL than the migrations, the schema changes and
+seed users are in `migrations/your_changes.sql`.
 
 ### 4. Start Development Server
 
@@ -56,9 +66,51 @@ Visit: http://localhost:8080
 
 ### 5. Login Credentials
 
-**Admin Account:**
-- Username: `admin`
-- Password: `admin123`
+Login is by **email**, not username.
+
+| Email | Password | Role | Sees |
+|---|---|---|---|
+| `admin@crm.test` | `admin123` | admin | everything, only role that can delete |
+| `manager@crm.test` | `manager123` | manager | views all, edits own + team |
+| `sales@crm.test` | `sales123` | sales | 40 customers, in the manager's team |
+| `solo@crm.test` | `solo1234` | sales | 30 customers, outside the team |
+
+10 customers are left unassigned on purpose — only admin sees those.
+
+The same accounts work for `POST /api/login`.
+
+### 6. Email (optional)
+
+Nothing breaks without this — a failed email is logged and the customer is
+still created. To actually send, fill in the SMTP block in `.env`
+(Mailtrap works):
+
+```
+email.enabled = true
+email.SMTPHost = 'sandbox.smtp.mailtrap.io'
+email.SMTPUser = '...'
+email.SMTPPass = '...'
+email.SMTPPort = 2525
+```
+
+Preview a template without sending: `php spark email:preview 3 welcome`
+
+### 7. API
+
+See `docs/API.md` for the full reference, or import
+`docs/legacy-crm.postman_collection.json` into Postman — run "Login" and the
+token is stored automatically.
+
+```bash
+curl -X POST http://localhost:8080/api/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@crm.test","password":"admin123"}'
+```
+
+### What changed from the original
+
+`CHANGES.md` has the full write-up — the 8 bugs, what was actually wrong with
+each, and how the four features are put together.
 
 ## Project Structure
 
