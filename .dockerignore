@@ -1,0 +1,13 @@
+.git
+.gitignore
+vendor
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/debugbar/*
+.env
+.env.*
+node_modules
+docs
+migrations
+CHANGES.md
