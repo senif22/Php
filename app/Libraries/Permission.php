@@ -10,14 +10,33 @@ class Permission
     public const MANAGER = 'manager';
     public const SALES = 'sales';
 
+    protected static ?array $identity = null;
+
+    public static function actAs(?array $user): void
+    {
+        self::$identity = $user;
+    }
+
+    protected static function identity(): array
+    {
+        if (self::$identity !== null) {
+            return self::$identity;
+        }
+
+        return [
+            'id' => session()->get('user_id'),
+            'role' => session()->get('role'),
+        ];
+    }
+
     public static function role(): ?string
     {
-        return session()->get('role');
+        return self::identity()['role'] ?? null;
     }
 
     public static function userId(): ?int
     {
-        $id = session()->get('user_id');
+        $id = self::identity()['id'] ?? null;
 
         return $id === null ? null : (int) $id;
     }

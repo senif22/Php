@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "Legacy CRM API",
+    "description": "REST API for the Legacy CRM. Run 'Login' first - it stores the JWT in the collection variable {{token}} automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "if (body.data && body.data.token) {",
+              "    pm.collectionVariables.set('token', body.data.token);",
+              "}",
+              "pm.test('200 OK', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@crm.test\",\n  \"password\": \"admin123\"\n}" },
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{base_url}}/api/me", "host": ["{{base_url}}"], "path": ["api", "me"] }
+      }
+    },
+    {
+      "name": "List customers",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/customers?page=1&per_page=20&status=active&city=Mumbai&sort=name&order=asc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "customers"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" },
+            { "key": "status", "value": "active" },
+            { "key": "city", "value": "Mumbai" },
+            { "key": "sort", "value": "name" },
+            { "key": "order", "value": "asc" },
+            { "key": "search", "value": "Customer", "disabled": true }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get customer",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{base_url}}/api/customers/1", "host": ["{{base_url}}"], "path": ["api", "customers", "1"] }
+      }
+    },
+    {
+      "name": "Create customer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"API Created\",\n  \"email\": \"apicreate@example.com\",\n  \"phone\": \"9876543210\",\n  \"company\": \"Acme\",\n  \"city\": \"Surat\",\n  \"status\": \"active\"\n}" },
+        "url": { "raw": "{{base_url}}/api/customers", "host": ["{{base_url}}"], "path": ["api", "customers"] }
+      }
+    },
+    {
+      "name": "Update customer",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"city\": \"Rajkot\"\n}" },
+        "url": { "raw": "{{base_url}}/api/customers/1", "host": ["{{base_url}}"], "path": ["api", "customers", "1"] }
+      }
+    },
+    {
+      "name": "Delete customer",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{base_url}}/api/customers/1", "host": ["{{base_url}}"], "path": ["api", "customers", "1"] }
+      }
+    }
+  ]
+}
