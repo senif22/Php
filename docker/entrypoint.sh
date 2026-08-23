@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-if [ "$(apache2ctl -M 2>/dev/null | grep -c 'mpm_.*_module')" -gt 1 ]; then
-    echo "More than one MPM enabled, forcing mpm_prefork."
-    a2dismod -f mpm_event mpm_worker >/dev/null 2>&1 || true
-    a2enmod mpm_prefork >/dev/null 2>&1 || true
-fi
+echo "Forcing a single Apache MPM (mpm_prefork)."
+a2dismod -f mpm_event >/dev/null 2>&1 || true
+a2dismod -f mpm_worker >/dev/null 2>&1 || true
+a2enmod mpm_prefork >/dev/null 2>&1 || true
+ls -1 /etc/apache2/mods-enabled/ | grep -E '^mpm_' || true
 
 : "${PORT:=80}"
 sed -ri "s/^Listen 80$/Listen ${PORT}/" /etc/apache2/ports.conf
