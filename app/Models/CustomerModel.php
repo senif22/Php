@@ -19,7 +19,8 @@ class CustomerModel extends Model
         'company',
         'city',
         'status',
-        'notes'
+        'notes',
+        'assigned_to'
     ];
 
     protected $useTimestamps = true;
@@ -36,6 +37,7 @@ class CustomerModel extends Model
         'company' => 'permit_empty|max_length[255]',
         'city' => 'permit_empty|max_length[100]',
         'status' => 'permit_empty|in_list[active,inactive,pending]',
+        'assigned_to' => 'permit_empty|is_natural_no_zero',
         'notes' => 'permit_empty|max_length[5000]'
     ];
 

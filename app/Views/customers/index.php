@@ -53,6 +53,7 @@
                         <th>Company</th>
                         <th>City</th>
                         <th>Status</th>
+                        <th>Assigned To</th>
                         <th>Recent Activities</th>
                         <th>Actions</th>
                     </tr>
@@ -77,6 +78,13 @@
                                 </span>
                             </td>
                             <td>
+                                <?php if (!empty($customer['assigned_name'])): ?>
+                                    <?= esc($customer['assigned_name']) ?>
+                                <?php else: ?>
+                                    <span class="text-muted">Unassigned</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
                                 <?php if (!empty($customer['activities'])): ?>
                                     <small class="text-muted">
                                         <?php foreach (array_slice($customer['activities'], 0, 2) as $activity): ?>
@@ -91,18 +99,22 @@
                                 <a href="<?= base_url('customers/view/' . $customer['id']) ?>" class="btn btn-sm btn-info" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <?php if (\App\Libraries\Permission::canEdit($customer)): ?>
                                 <a href="<?= base_url('customers/edit/' . $customer['id']) ?>" class="btn btn-sm btn-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <?php endif; ?>
+                                <?php if (\App\Libraries\Permission::canDelete($customer)): ?>
                                 <a href="<?= base_url('customers/delete/' . $customer['id']) ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="9" class="text-center text-muted">No customers found</td>
+                            <td colspan="10" class="text-center text-muted">No customers found</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\CustomerModel;
 use App\Models\ActivityModel;
+use App\Libraries\Permission;
+use App\Models\UserModel;
 
 class Customers extends BaseController
 {
@@ -23,20 +25,28 @@ class Customers extends BaseController
         $status = $this->request->getGet('status');
         $city = $this->request->getGet('city');
 
-        $customers = $this->customerModel;
+        $customers = $this->customerModel
+            ->select('customers.*, users.name as assigned_name')
+            ->join('users', 'users.id = customers.assigned_to', 'left');
+
+        $visibleIds = Permission::visibleUserIds();
+
+        if ($visibleIds !== null) {
+            $customers = $customers->whereIn('customers.assigned_to', $visibleIds);
+        }
 
         if ($search !== null && $search !== '') {
             $customers = $customers->groupStart()
-                ->like('name', $search)
-                ->orLike('email', $search)
+                ->like('customers.name', $search)
+                ->orLike('customers.email', $search)
                 ->groupEnd();
         }
 
         if ($status !== null && $status !== '') {
-            $customers = $customers->where('status', $status);
+            $customers = $customers->where('customers.status', $status);
         }
 
-        $customers = $customers->orderBy('id', 'DESC')->paginate(20);
+        $customers = $customers->orderBy('customers.id', 'DESC')->paginate(20);
 
         $data = [
             'customers' => $customers,
@@ -51,12 +61,25 @@ class Customers extends BaseController
 
     public function create()
     {
-        return view('customers/create');
+        if (! Permission::canCreate()) {
+            return $this->accessDenied();
+        }
+
+        return view('customers/create', [
+            'users' => Permission::isAdmin() ? (new UserModel())->orderBy('name')->findAll() : []
+        ]);
     }
 
     public function store()
     {
+        if (! Permission::canCreate()) {
+            return $this->accessDenied();
+        }
+
         $data = [
+            'assigned_to' => Permission::isAdmin()
+                ? $this->request->getPost('assigned_to')
+                : Permission::userId(),
             'name' => $this->request->getPost('name'),
             'email' => $this->request->getPost('email'),
             'phone' => $this->request->getPost('phone'),
@@ -91,6 +114,10 @@ class Customers extends BaseController
             return redirect()->to('/customers')->with('error', 'Customer not found');
         }
 
+        if (! Permission::canEdit($customer)) {
+            return $this->accessDenied();
+        }
+
         $data = [
             'customer' => $customer
         ];
@@ -104,6 +131,10 @@ class Customers extends BaseController
 
         if (!$customer) {
             return redirect()->to('/customers')->with('error', 'Customer not found');
+        }
+
+        if (! Permission::canEdit($customer)) {
+            return $this->accessDenied();
         }
 
         $data = [
@@ -142,6 +173,10 @@ class Customers extends BaseController
             return redirect()->to('/customers')->with('error', 'Customer not found');
         }
 
+        if (! Permission::canDelete($customer)) {
+            return $this->accessDenied();
+        }
+
         $this->customerModel->delete($id);
 
         return redirect()->to('/customers')->with('success', 'Customer deleted successfully');
@@ -153,6 +188,10 @@ class Customers extends BaseController
 
         if (!$customer) {
             return redirect()->to('/customers')->with('error', 'Customer not found');
+        }
+
+        if (! Permission::canView($customer)) {
+            return $this->accessDenied();
         }
 
         $activities = $this->activityModel
@@ -171,6 +210,12 @@ class Customers extends BaseController
 
     public function export()
     {
+        $visibleIds = Permission::visibleUserIds();
+
+        if ($visibleIds !== null) {
+            $this->customerModel->whereIn('assigned_to', $visibleIds);
+        }
+
         $customers = $this->customerModel->findAll();
 
         $filename = 'customers_' . date('Y-m-d') . '.csv';
@@ -195,5 +240,15 @@ class Customers extends BaseController
 
         fclose($output);
         exit;
+    }
+
+    protected function accessDenied()
+    {
+        return service('response')
+            ->setStatusCode(403)
+            ->setBody(view('errors/access_denied', [
+                'role' => Permission::role(),
+                'required' => [],
+            ]));
     }
 }

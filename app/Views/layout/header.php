@@ -81,7 +81,8 @@
                 <nav class="navbar navbar-light bg-light border-bottom">
                     <div class="container-fluid">
                         <span class="navbar-text">
-                            Welcome, <strong><?= session()->get('username') ?></strong>
+                            Welcome, <strong><?= esc(session()->get('username')) ?></strong>
+                            <span class="badge bg-secondary text-uppercase ms-1"><?= esc(session()->get('role')) ?></span>
                         </span>
                     </div>
                 </nav>

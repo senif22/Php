@@ -13,8 +13,8 @@
 
                     <form action="<?= base_url('authenticate') ?>" method="POST">
                         <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus>
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" placeholder="Enter email" value="<?= old('email') ?>" required autofocus>
                         </div>
 
                         <div class="mb-3">
@@ -30,7 +30,10 @@
                     <div class="mt-4 text-center">
                         <small class="text-muted">
                             <strong>Demo Credentials:</strong><br>
-                            Username: admin | Password: admin123
+                            admin@crm.test / admin123<br>
+                            manager@crm.test / manager123<br>
+                            sales@crm.test / sales123<br>
+                            solo@crm.test / solo1234
                         </small>
                     </div>
                 </div>

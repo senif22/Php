@@ -49,6 +49,20 @@
                 </div>
             </div>
 
+            <?php if (! empty($users)): ?>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Assign To</label>
+                    <select name="assigned_to" class="form-select">
+                        <option value="">Unassigned</option>
+                        <?php foreach ($users as $user): ?>
+                            <option value="<?= $user['id'] ?>"><?= esc($user['name']) ?> (<?= esc($user['role']) ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <div class="mb-3">
                 <label class="form-label">Notes</label>
                 <textarea name="notes" class="form-control" rows="4"></textarea>

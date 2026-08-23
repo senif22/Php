@@ -16,6 +16,7 @@ class Filters extends BaseFilters
         'pagecache'     => \CodeIgniter\Filters\PageCache::class,
         'performance'   => \CodeIgniter\Filters\PerformanceMetrics::class,
         'auth'          => \App\Filters\AuthFilter::class,
+        'role'          => \App\Filters\RoleCheck::class,
     ];
 
     public array $globals = [
